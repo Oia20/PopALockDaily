@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ThreeFiberLock from '../components/threeFiberLock';
 import '../layouts/popalock.css';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
@@ -15,14 +16,39 @@ const PopALock: React.FC = () => {
   const [incorrectDigits, setIncorrectDigits] = useState<string[]>([]);
   const [wrongPlaceDigits, setWrongPlaceDigits] = useState<string[]>([]);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
+
+  const handleShakeLock = () => {
+    if (lockRef.current) {
+      console.log('Shaking lock');
+      lockRef.current.shakeLockAnimation(); // Call the child's shakeLockAnimation
+    }
+  };
   // Generate a random target number when the component mounts
   useEffect(() => {
     generateTargetNumber();
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
   }, []);
 
   useEffect(() => {
     console.log('Target number:', targetNumber);
   }, [targetNumber]);
+
+  useEffect(() => {
+    if (gameStatus === 'playing') {
+      inputRef.current?.focus();
+    }
+  }, [gameStatus]);
+
+  const handleDocumentClick = () => {
+    if (gameStatus === 'playing') {
+      inputRef.current?.focus();
+    }
+  };
 
   const generateTargetNumber = () => {
     const randomNumber = Math.floor(100 + Math.random() * 900).toString();
@@ -74,10 +100,12 @@ const PopALock: React.FC = () => {
           if (!newCorrectDigits.includes(digit)) newCorrectDigits.push(digit);
           return 'correct';
         } else if (targetNumber.includes(digit)) {
-            if (!newWrongPlaceDigits.includes(digit)) newWrongPlaceDigits.push(digit);
+          if (!newWrongPlaceDigits.includes(digit)) newWrongPlaceDigits.push(digit);
+          handleShakeLock();
           return 'present';
         } else {
           if (!newIncorrectDigits.includes(digit)) newIncorrectDigits.push(digit);
+          handleShakeLock();
           return 'absent';
         }
       });
@@ -109,8 +137,11 @@ const PopALock: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-600 flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl md:text-5xl font-bold text-white mb-8">Popalock</h1>
+      <div className="w-full h-full">
+      <ThreeFiberLock ref={lockRef} />
+      </div>
 
       {/* Guesses Grid */}
       <div className="grid grid-rows-2 gap-2 mb-8">
@@ -148,8 +179,8 @@ const PopALock: React.FC = () => {
 
       {/* Number Pad */}
       {gameStatus === 'playing' && (
-        <div className="flex flex-row gap-2">
-          {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Del', '0', 'Enter'].map((digit) => {
+        <div className="flex flex-row gap-2 flex-wrap justify-center">
+          {['Del', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0','Enter'].map((digit) => {
             let bgColor = 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800';
 
             if (correctDigits.includes(digit)) {
@@ -177,6 +208,7 @@ const PopALock: React.FC = () => {
       {/* Hidden input to capture keyboard events */}
       {gameStatus === 'playing' && (
         <input
+          ref={inputRef}
           type="text"
           className="opacity-0 w-0 h-0"
           onKeyDown={handleKeyDown}
