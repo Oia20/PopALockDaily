@@ -1,10 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PopALock from '../components/popalock';
+import Navbar from '../components/navBar';
 ---
 
 <Layout title="Pop A Lock - Daily">
 	<main>
+		<Navbar client:load/>
 		<PopALock client:load/>
 	</main>
 </Layout>

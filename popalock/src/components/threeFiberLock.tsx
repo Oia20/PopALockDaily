@@ -33,19 +33,19 @@ const LoadLock = forwardRef((props, ref) => {
   }));
 
   return (
-    <group ref={group} onClick={shakeLockAnimation} position={[0, -1.5, 0]}>
+    <group ref={group} onClick={shakeLockAnimation} position={[0, -1.5, 0]} >
       <mesh>
         {gltf.scene && <primitive object={gltf.scene} />}
-        <directionalLight color="white" position={[0, 0, -5]} intensity={2} />
-        <directionalLight color="white" position={[0, 0, 5]} intensity={2} />
+        <directionalLight color="whitesmoke" position={[0, 0, -5]} intensity={3} />
+        <directionalLight color="white" position={[0, 0, 5]} intensity={3} />
       </mesh>
     </group>
   );
 });
 
 const ThreeFiberLock = forwardRef((props, ref) => (
-  <Canvas style={{ width: '100%', height: '40vh' }} camera={{ position: [0, -5, 5] }}>
-    <OrbitControls />
+  <Canvas style={{ width: 'fit-content', height: '50vh' }} camera={{ position: [0, -1, 5] }}>
+    <OrbitControls maxDistance={10} minDistance={5} maxPolarAngle={2.2} enablePan={false} />
     <Float>
       <LoadLock ref={ref} />
     </Float>

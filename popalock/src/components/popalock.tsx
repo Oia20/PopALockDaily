@@ -121,6 +121,8 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
       } else if (newGuesses.length === MAX_ATTEMPTS) {
         setGameStatus('lost');
       }
+    } else {
+      handleShakeLock();
     }
   };
 
@@ -138,8 +140,7 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-600 flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl md:text-5xl font-bold text-white mb-8">Popalock</h1>
-      <div className="w-full h-full">
+      <div className="w-full h-full flex justify-center">
       <ThreeFiberLock ref={lockRef} />
       </div>
 
@@ -239,6 +240,7 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
           </button>
         </div>
       )}
+      <h1 className="mt-8 text-lg">Created with ❤️ & ☕ by <a className='underline' href="https://dement.dev" target="_blank" rel="noopener noreferrer">Jacob Dement</a></h1>
     </div>
   );
 };
