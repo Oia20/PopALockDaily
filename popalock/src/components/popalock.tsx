@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ThreeFiberLock from '../components/threeFiberLock';
 import '../layouts/popalock.css';
+import Navbar from '../components/navBar';
+
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
 const MAX_ATTEMPTS = 2;  // Maximum number of guesses
@@ -17,12 +19,28 @@ const PopALock: React.FC = () => {
   const [wrongPlaceDigits, setWrongPlaceDigits] = useState<string[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
-const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
 
+  const lockRef = useRef<{
+    openLock(): unknown; shakeLockAnimation: () => void; closeLock: () => unknown;
+  }>(null);
+
+  const handleCloseLock = () => {
+    if (lockRef.current) {
+      console.log('Closing lock');
+      lockRef.current.closeLock(); // Call the child's closeLock
+    }
+  };
   const handleShakeLock = () => {
     if (lockRef.current) {
       console.log('Shaking lock');
       lockRef.current.shakeLockAnimation(); // Call the child's shakeLockAnimation
+    }
+  };
+
+  const handleOpenLock = () => {
+    if (lockRef.current) {
+      console.log('Opening lock');
+      lockRef.current.openLock(); // Call the child's openLock
     }
   };
   // Generate a random target number when the component mounts
@@ -99,6 +117,7 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
         if (digit === targetNumber[index]) {
           if (!newCorrectDigits.includes(digit)) newCorrectDigits.push(digit);
           return 'correct';
+          
         } else if (targetNumber.includes(digit)) {
           if (!newWrongPlaceDigits.includes(digit)) newWrongPlaceDigits.push(digit);
           handleShakeLock();
@@ -117,6 +136,7 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
       setWrongPlaceDigits(newWrongPlaceDigits);
 
       if (currentGuess === targetNumber) {
+        handleOpenLock();
         setGameStatus('won');
       } else if (newGuesses.length === MAX_ATTEMPTS) {
         setGameStatus('lost');
@@ -136,10 +156,12 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
     setIncorrectDigits([]);
     setWrongPlaceDigits([]);
     generateTargetNumber();
+    handleCloseLock();
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-600 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex flex-col items-center justify-center p-4 pt-0 mt-0">
+      <div className="w-screen h-full flex justify-center items-center"><Navbar/></div>
       <div className="w-full h-full flex justify-center">
       <ThreeFiberLock ref={lockRef} />
       </div>
@@ -196,7 +218,7 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
               <button
                 key={digit}
                 onClick={() => handleButtonClick(digit)}
-                className={`${bgColor} text-white font-bold py-4 rounded p-3 pt-1 pb-1 `}
+                className={`${bgColor} text-white font-bold py-4 rounded p-3 pt-1 pb-1 shadow-2xl`}
                 aria-label={digit === 'Del' ? 'Delete' : digit}
               >
                 <p className="text-center text-lg">{digit}</p>

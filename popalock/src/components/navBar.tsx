@@ -1,21 +1,52 @@
-import React from 'react';
-import { FaLock } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaLock, FaStar } from 'react-icons/fa';
 
 const Navbar = () => {
+  // State to track if the user is signed in
+  const [signedIn, setSignedIn] = useState(false);
+
+  // Handler to toggle sign-in state
+  const handleSignInOut = () => {
+    setSignedIn(!signedIn);
+  };
+
   return (
-    <nav className="bg-gradient-to-b from-gray-900 to-gray-900 p-4 flex justify-between items-center">
+    <nav className="bg-transparent p-4 flex justify-between items-center w-screen">
+      {/* Left side: Logo */}
       <div className="flex items-center">
         <FaLock className="text-yellow-400 text-2xl mr-2" />
         <span className="text-white text-lg font-semibold cursor-pointer">Pop A Lock</span>
       </div>
-      <a
-        href="https://github.com/Oia20/PopALock"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-white hover:text-yellow-300 transition duration-200"
-      >
-        GitHub
-      </a>
+
+      {/* Right side: Links and Buttons */}
+      <div className="flex items-center">
+        {/* GitHub Link/Button */}
+        <a
+          href="https://github.com/Oia20/PopALockDaily"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden sm:flex items-center bg-yellow-500 text-black px-3 py-1 rounded-md hover:bg-yellow-600 transition duration-200 mr-4"
+        >
+          <FaStar className="mr-2" />
+          <span className="font-semibold">Star on GitHub</span>
+        </a>
+        {/* GitHub Text for Smaller Screens */}
+        <a
+          href="https://github.com/Oia20/PopALockDaily"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="sm:hidden text-white font-semibold mr-4"
+        >
+          GitHub
+        </a>
+        {/* Sign In/Sign Out Button */}
+        <button
+          onClick={handleSignInOut}
+          className="bg-yellow-500 text-black px-3 py-1 rounded-md hover:bg-yellow-600 transition duration-200"
+        >
+          {signedIn ? 'Sign Out' : 'Sign In'}
+        </button>
+      </div>
     </nav>
   );
 };
