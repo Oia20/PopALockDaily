@@ -73,7 +73,7 @@ const PopALock: React.FC = () => {
   }, [gameStatus]);
 
   const handleDocumentClick = () => {
-    if (gameStatus === 'playing') {
+    if (gameStatus === 'playing' && (window as any).mobileCheck()) {
       inputRef.current?.focus();
     }
   };
