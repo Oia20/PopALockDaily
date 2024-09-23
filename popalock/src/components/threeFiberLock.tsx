@@ -6,7 +6,7 @@ import { OrbitControls, Float } from '@react-three/drei';
 import { gsap } from 'gsap';
 
 const LoadLock = forwardRef((props, ref) => {
-  const gltf = useLoader(GLTFLoader, '/models/lockAnimated.glb');
+  const gltf = useLoader(GLTFLoader, '/models/lockAnimated2.glb');
   const group = useRef<Group>(null);
   const mixer = useRef<AnimationMixer | null>(null);
 
@@ -80,7 +80,7 @@ const LoadLock = forwardRef((props, ref) => {
 });
 
 const ThreeFiberLock = forwardRef((props, ref) => (
-  <Canvas style={{ width: 'fit-content', height: '50vh' }} camera={{ position: [0, -1, 5] }}>
+  <Canvas style={{ width: '80vw', height: '50vh' }} camera={{ position: [0, -1, 5] }}>
     <OrbitControls maxDistance={10} minDistance={5} maxPolarAngle={2.2} enablePan={false} />
     <Float>
       <LoadLock ref={ref} />
