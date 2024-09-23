@@ -196,10 +196,10 @@ const lockRef = useRef<{ shakeLockAnimation: () => void }>(null);
               <button
                 key={digit}
                 onClick={() => handleButtonClick(digit)}
-                className={`${bgColor} text-white font-bold py-4 rounded p-3 pt-1 pb-1`}
+                className={`${bgColor} text-white font-bold py-4 rounded p-3 pt-1 pb-1 `}
                 aria-label={digit === 'Del' ? 'Delete' : digit}
               >
-                {digit}
+                <p className="text-center text-lg">{digit}</p>
               </button>
             );
           })}
