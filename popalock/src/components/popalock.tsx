@@ -225,7 +225,6 @@ const PopALock: React.FC = () => {
           type="text"
           className="opacity-0 w-0 h-0"
           onKeyDown={handleKeyDown}
-          autoFocus
         />
       )}
 
