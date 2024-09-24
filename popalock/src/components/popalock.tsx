@@ -3,7 +3,6 @@ import ThreeFiberLock from '../components/threeFiberLock';
 import '../layouts/popalock.css';
 import Navbar from '../components/navBar';
 
-
 const NUMBER_LENGTH = 3; // Number of digits in the target number
 const MAX_ATTEMPTS = 2;  // Maximum number of guesses
 type Feedback = 'correct' | 'present' | 'absent';
@@ -17,11 +16,14 @@ const PopALock: React.FC = () => {
   const [correctDigits, setCorrectDigits] = useState<string[]>([]);
   const [incorrectDigits, setIncorrectDigits] = useState<string[]>([]);
   const [wrongPlaceDigits, setWrongPlaceDigits] = useState<string[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [hintOne, setHintOne] = useState<string>('');
 
   const inputRef = useRef<HTMLInputElement>(null);
-
   const lockRef = useRef<{
-    openLock(): unknown; shakeLockAnimation: () => void; closeLock: () => unknown;
+    openLock(): unknown;
+    shakeLockAnimation: () => void;
+    closeLock: () => unknown;
   }>(null);
 
   const handleCloseLock = () => {
@@ -30,6 +32,12 @@ const PopALock: React.FC = () => {
       lockRef.current.closeLock(); // Call the child's closeLock
     }
   };
+
+  const createHintOne = () => {
+    const correctDigits = targetNumber.split('');
+    setHintOne(correctDigits.join())
+  };
+
   const handleShakeLock = () => {
     if (lockRef.current) {
       console.log('Shaking lock');
@@ -43,26 +51,27 @@ const PopALock: React.FC = () => {
       lockRef.current.openLock(); // Call the child's openLock
     }
   };
-  // Generate a random target number when the component mounts
+
   useEffect(() => {
     generateTargetNumber();
-
   }, []);
 
-
+  useEffect(() => {
+    if (targetNumber) {
+      createHintOne();
+    }
+  }, [targetNumber]);
 
   const handleSquareClick = () => {
     inputRef.current?.focus();
-
-  }
-
+  };
 
   const generateTargetNumber = () => {
     const randomNumber = Math.floor(100 + Math.random() * 900).toString();
     setTargetNumber(randomNumber);
+    console.log(randomNumber);
   };
 
-  // Handle keyboard input
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (gameStatus !== 'playing') return;
 
@@ -77,7 +86,6 @@ const PopALock: React.FC = () => {
     }
   };
 
-  // Handle number pad button clicks
   const handleButtonClick = (digit: string) => {
     if (gameStatus !== 'playing') return;
 
@@ -101,12 +109,10 @@ const PopALock: React.FC = () => {
       const newIncorrectDigits: string[] = [...incorrectDigits];
       const newWrongPlaceDigits: string[] = [...wrongPlaceDigits];
 
-      // Compute feedback for each digit
       const feedback = currentGuess.split('').map((digit, index) => {
         if (digit === targetNumber[index]) {
           if (!newCorrectDigits.includes(digit)) newCorrectDigits.push(digit);
           return 'correct';
-          
         } else if (targetNumber.includes(digit)) {
           if (!newWrongPlaceDigits.includes(digit)) newWrongPlaceDigits.push(digit);
           handleShakeLock();
@@ -135,7 +141,6 @@ const PopALock: React.FC = () => {
     }
   };
 
-  // Reset the game
   const resetGame = () => {
     setGuesses([]);
     setGuessResults([]);
@@ -148,11 +153,15 @@ const PopALock: React.FC = () => {
     handleCloseLock();
   };
 
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex flex-col items-center justify-center p-4 pt-0 mt-0">
       <div className="w-screen h-full flex justify-center items-center"><Navbar/></div>
       <div className="w-full h-full flex justify-center">
-      <ThreeFiberLock ref={lockRef} />
+        <ThreeFiberLock ref={lockRef} />
       </div>
 
       {/* Guesses Grid */}
@@ -173,7 +182,7 @@ const PopALock: React.FC = () => {
                 : 'border-gray-500';
 
               const shouldAnimate = Boolean(feedback);
-              const animationDelay = `${colIndex * 0.2}s`; // Delay between flips
+              const animationDelay = `${colIndex * 0.2}s`;
 
               return (
                 <div
@@ -190,7 +199,36 @@ const PopALock: React.FC = () => {
         ))}
       </div>
 
-      {/* Number Pad */}
+      <div>
+        <button
+          className="mb-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-black px-3 py-1 rounded-md hover:bg-yellow-600 transition duration-200"
+          onClick={toggleModal}
+        >
+          Todays Hints
+        </button>
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-md text-black max-w-sm w-full">
+            <h2 className="text-2xl mb-4">Hints</h2>
+            <p className="mb-4">Here are some hints to help you guess the code:</p>
+            <ul className="list-disc list-inside">
+              <li>{hintOne} One of those digits is correct and positioned correctly.</li>
+              <li>Hint 2: All digits are unique.</li>
+              <li>Hint 3: The digits are between 1 and 9.</li>
+            </ul>
+            <button
+              className="mt-4 px-4 py-2 bg-blue-500 text-white font-bold rounded"
+              onClick={toggleModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {gameStatus === 'playing' && (
         <div className="flex flex-row gap-2 flex-wrap justify-center">
           {['Del', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0','Enter'].map((digit) => {
@@ -218,7 +256,6 @@ const PopALock: React.FC = () => {
         </div>
       )}
 
-      {/* Hidden input to capture keyboard events */}
       {gameStatus === 'playing' && (
         <input
           ref={inputRef}
@@ -228,7 +265,6 @@ const PopALock: React.FC = () => {
         />
       )}
 
-      {/* Game status messages */}
       {gameStatus === 'won' && (
         <div className="mt-8 text-green-500 text-2xl text-center">
           🎉 Congratulations! You guessed the number!
