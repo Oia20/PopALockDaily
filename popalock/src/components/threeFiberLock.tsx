@@ -4,11 +4,16 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Group, AnimationMixer, LoopOnce } from 'three';
 import { OrbitControls, Float } from '@react-three/drei';
 import { gsap } from 'gsap';
+import { Suspense } from 'react';
+import './ThreeFiberLock.css'; // Import the CSS file for the spinner
+import { Html, useProgress } from '@react-three/drei';
+import { FaLock, FaStar } from 'react-icons/fa';
 
 const LoadLock = forwardRef((props, ref) => {
   const gltf = useLoader(GLTFLoader, '/models/lockAnimated2.glb');
   const group = useRef<Group>(null);
   const mixer = useRef<AnimationMixer | null>(null);
+
 
   useFrame((state, delta) => {
     mixer.current?.update(delta);
@@ -79,12 +84,29 @@ const LoadLock = forwardRef((props, ref) => {
   );
 });
 
+function Loader() {
+  const { progress } = useProgress();
+  return (
+    <Html center>
+      <div className='spinner-container'>
+        <div className='spinner-lock'>
+          <p>{<FaLock className='text-yellow-400 text-5xl' />}</p>
+        </div>
+      </div>
+    </Html>
+  );
+}
+
+
 const ThreeFiberLock = forwardRef((props, ref) => (
+
   <Canvas style={{ width: '80vw', height: '50vh' }} camera={{ position: [0, -1, 5] }}>
-    <OrbitControls maxDistance={10} minDistance={5} maxPolarAngle={2.2} enablePan={false} />
-    <Float>
-      <LoadLock ref={ref} />
-    </Float>
+    <Suspense fallback={<Loader />}>
+      <OrbitControls maxDistance={10} minDistance={5} maxPolarAngle={2.2} enablePan={false} />
+      <Float>
+        <LoadLock ref={ref} />
+      </Float>
+    </Suspense>
   </Canvas>
 ));
 
