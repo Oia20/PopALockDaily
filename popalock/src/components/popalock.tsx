@@ -4,7 +4,7 @@ import '../layouts/popalock.css';
 import Navbar from '../components/navBar';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
-const MAX_ATTEMPTS = 2;  // Maximum number of guesses
+const MAX_ATTEMPTS = 3;  // Maximum number of guesses
 type Feedback = 'correct' | 'present' | 'absent';
 
 const PopALock: React.FC = () => {
@@ -18,6 +18,9 @@ const PopALock: React.FC = () => {
   const [wrongPlaceDigits, setWrongPlaceDigits] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [hintOne, setHintOne] = useState<string>('');
+  const [hintTwo, setHintTwo] = useState<string>('');
+  const [hintThree, setHintThree] = useState<string>('');
+
 
   const inputRef = useRef<HTMLInputElement>(null);
   const lockRef = useRef<{
@@ -33,9 +36,62 @@ const PopALock: React.FC = () => {
     }
   };
 
+  const createHintThree= () => {
+    const correctDigits = targetNumber.split('');
+      // Step 1: Randomly select an index to change
+  const indexToChange = Math.floor(Math.random() * 3);
+
+  // Step 2: Create a new random digit for the selected index (different from the original)
+  let newDigit: string;
+  do {
+    newDigit = Math.floor(Math.random() * 10).toString();
+  } while (newDigit === correctDigits[indexToChange]);
+
+  // Step 3: Get the two remaining correct digits
+  const correctTwoDigits = correctDigits.filter((_, index) => index !== indexToChange);
+
+  // Step 4: Shuffle the correct digits so they are not in their original positions
+  const shuffledDigits = [correctDigits[1], correctDigits[0]]; // Since there are only 2, just swap them
+
+  // Step 5: Reconstruct the new list
+  const newNumbers = correctDigits.map((num, index) => {
+    if (index === indexToChange) {
+      return newDigit;
+    } else {
+      return shuffledDigits.shift()!;
+    }
+  });
+  setHintThree(newNumbers.join(''));
+  }
+
+  const createHintTwo = () => {
+    const correctDigits = targetNumber.split('');
+
+  // Step 1: Create a pool of digits from 0 to 9
+    const digitPool = Array.from({ length: 10 }, (_, i) => i.toString());
+
+    // Step 2: Remove the digits in the original list from the pool
+    const availableDigits = digitPool.filter(digit => !correctDigits.includes(digit));
+
+    const newNumbers: string[] = [];
+    while (newNumbers.length < 3) {
+      const randomIndex = Math.floor(Math.random() * availableDigits.length);
+      newNumbers.push(availableDigits.splice(randomIndex, 1)[0]);
+    }
+    setHintTwo(newNumbers.join(''));
+  }
+
   const createHintOne = () => {
     const correctDigits = targetNumber.split('');
-    setHintOne(correctDigits.join())
+
+    const indexToKeep = Math.floor(Math.random() * 3);
+
+    // Step 2: Generate new random digits (from 0 to 9) for the other two positions
+    const newNumbers = correctDigits.map((num, index) => {
+      return index === indexToKeep ? num : Math.floor(Math.random() * 10);
+    });
+  
+    setHintOne(newNumbers.join());
   };
 
   const handleShakeLock = () => {
@@ -59,6 +115,8 @@ const PopALock: React.FC = () => {
   useEffect(() => {
     if (targetNumber) {
       createHintOne();
+      createHintTwo();
+      createHintThree();
     }
   }, [targetNumber]);
 
@@ -165,7 +223,7 @@ const PopALock: React.FC = () => {
       </div>
 
       {/* Guesses Grid */}
-      <div className="grid grid-rows-2 gap-2 mb-8">
+      <div className="grid grid-rows-${MAX_ATTEMPTS} gap-2 mb-8">
         {Array.from({ length: MAX_ATTEMPTS }).map((_, rowIndex) => (
           <div key={rowIndex} className="grid grid-cols-3 gap-2">
             {Array.from({ length: NUMBER_LENGTH }).map((_, colIndex) => {
@@ -212,12 +270,17 @@ const PopALock: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-md text-black max-w-sm w-full">
-            <h2 className="text-2xl mb-4">Hints</h2>
-            <p className="mb-4">Here are some hints to help you guess the code:</p>
+            <h2 className="text-2xl mb-4">Todays Hints</h2>
             <ul className="list-disc list-inside">
-              <li>{hintOne} One of those digits is correct and positioned correctly.</li>
-              <li>Hint 2: All digits are unique.</li>
-              <li>Hint 3: The digits are between 1 and 9.</li>
+              <p>Atlease one of the following digits is correct and positioned correctly.</p>
+              <div className="flex flex-row gap-2 w-full justify-center">
+              {hintOne.split(',').map((digit, index) => (
+                <p className="flex w-8 h-8 border-2 ${cellClass} flex-row items-center justify-center text-2xl font-bold" key={index}>{digit} </p>
+              ))}
+              </div>
+
+              <li>{hintTwo} None of these digits are correct.</li>
+              <li>{hintThree} Two of these digits are correct, but incorrectly placed.</li> 
             </ul>
             <button
               className="mt-4 px-4 py-2 bg-blue-500 text-white font-bold rounded"
