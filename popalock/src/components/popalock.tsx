@@ -20,6 +20,7 @@ const PopALock: React.FC = () => {
   const [hintOne, setHintOne] = useState<string>('');
   const [hintTwo, setHintTwo] = useState<string>('');
   const [hintThree, setHintThree] = useState<string>('');
+  const [jokeLog, setJokeLog] = useState<string>('749');
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,7 +32,6 @@ const PopALock: React.FC = () => {
 
   const handleCloseLock = () => {
     if (lockRef.current) {
-      console.log('Closing lock');
       lockRef.current.closeLock(); // Call the child's closeLock
     }
   };
@@ -96,14 +96,12 @@ const PopALock: React.FC = () => {
 
   const handleShakeLock = () => {
     if (lockRef.current) {
-      console.log('Shaking lock');
       lockRef.current.shakeLockAnimation(); // Call the child's shakeLockAnimation
     }
   };
 
   const handleOpenLock = () => {
     if (lockRef.current) {
-      console.log('Opening lock');
       lockRef.current.openLock(); // Call the child's openLock
     }
   };
@@ -117,6 +115,7 @@ const PopALock: React.FC = () => {
       createHintOne();
       createHintTwo();
       createHintThree();
+      console.log("Hello there Mr || Mrs dev tool onlooker! the code is " + jokeLog);
     }
   }, [targetNumber]);
 
@@ -127,7 +126,6 @@ const PopALock: React.FC = () => {
   const generateTargetNumber = () => {
     const randomNumber = Math.floor(100 + Math.random() * 900).toString();
     setTargetNumber(randomNumber);
-    console.log(randomNumber);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -162,7 +160,9 @@ const PopALock: React.FC = () => {
     if (currentGuess.length === NUMBER_LENGTH) {
       const newGuesses = [...guesses, currentGuess];
       setGuesses(newGuesses);
-
+      if (currentGuess == jokeLog) {
+        console.log("You did not really just trust a console, did you..??")
+      }
       const newCorrectDigits: string[] = [...correctDigits];
       const newIncorrectDigits: string[] = [...incorrectDigits];
       const newWrongPlaceDigits: string[] = [...wrongPlaceDigits];
@@ -269,21 +269,30 @@ const PopALock: React.FC = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-md text-black max-w-sm w-full">
-            <h2 className="text-2xl mb-4">Todays Hints</h2>
+          <div className="bg-gradient-to-br from-sky-800 from-0% via-cyan-800 to-cyan-800 p-8 rounded-md text-black max-w-sm w-full">
+            <h2 className="text-2xl mb-4 text-yellow-500">Todays Hints</h2>
             <ul className="list-disc list-inside">
-              <p>Atlease one of the following digits is correct and positioned correctly.</p>
+              <p className='text-white'>Atleast one of the following digits is correct and positioned correctly.</p>
               <div className="flex flex-row gap-2 w-full justify-center">
               {hintOne.split(',').map((digit, index) => (
-                <p className="flex w-8 h-8 border-2 ${cellClass} flex-row items-center justify-center text-2xl font-bold" key={index}>{digit} </p>
+                <p className="text-yellow-400 mt-2 flex w-8 h-8 border-2 ${cellClass} flex-row items-center justify-center text-2xl font-bold" key={index}>{digit} </p>
               ))}
               </div>
-
-              <li>{hintTwo} None of these digits are correct.</li>
-              <li>{hintThree} Two of these digits are correct, but incorrectly placed.</li> 
+              <p className='mt-4 center text-white'>None of the following digits are correct in any way.</p>
+              <div className="flex flex-row gap-2 w-full justify-center">
+              {hintTwo.split('').map((digit, index) => (
+                <p className="text-yellow-400 mt-2 flex w-8 h-8 border-2 ${cellClass} flex-row items-center justify-center text-2xl font-bold" key={index}>{digit} </p>
+              ))}
+              </div>
+              <p className='mt-4 text-white'>Two of the following digits are correct, but incorrectly placed.</p>
+              <div className="flex flex-row gap-2 w-full justify-center">
+              {hintThree.split('').map((digit, index) => (
+                <p className="text-yellow-400 mt-2 flex w-8 h-8 border-2 ${cellClass} flex-row items-center justify-center text-2xl font-bold" key={index}>{digit} </p>
+              ))}
+              </div>
             </ul>
             <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white font-bold rounded"
+              className="mt-4 px-4 py-2 bg-yellow-500 text-black font-bold rounded"
               onClick={toggleModal}
             >
               Close
