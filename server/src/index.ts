@@ -4,6 +4,7 @@ const express = require("express");
 import axios from "axios";
 import { Global } from "./entity/Global";
 const cron = require('node-cron');
+const cors = require('cors');
 
 AppDataSource.initialize()
     .then(() => {
@@ -15,7 +16,11 @@ AppDataSource.initialize()
 
 const app = express();
 app.use(express.json());
-
+const corsOptions = {
+    origin: 'http://localhost:4321',
+    credentials: true,
+};
+app.use(cors(corsOptions));
 
 // This route will fetch all users from the database and return them as JSON
 app.get("/users", async (req, res) => {
@@ -154,7 +159,7 @@ app.get("/codes", async (req, res) => {
 // cron.schedule('*/5 * * * *', generateTodaysCodes);
 
 // Schedule the task to run every 1 minutes
-cron.schedule('*/1 * * * *', generateTodaysCodes);
+// cron.schedule('*/1 * * * *', generateTodaysCodes);
 
 
 app.listen(3000, () => {
