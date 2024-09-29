@@ -5,6 +5,8 @@ import axios from "axios";
 import { Global } from "./entity/Global";
 const cron = require('node-cron');
 const cors = require('cors');
+const dotenv = require('dotenv');
+dotenv.config();
 
 AppDataSource.initialize()
     .then(() => {
@@ -17,8 +19,9 @@ AppDataSource.initialize()
 const app = express();
 app.use(express.json());
 const corsOptions = {
-    origin: 'http://localhost:4321',
+    origin: '*',
     credentials: true,
+    methods: ['GET', 'POST'],
 };
 app.use(cors(corsOptions));
 
@@ -48,13 +51,45 @@ app.get("/todays-codes", async (req, res) => {
     }
 });
 
-app.get("/auth/github"), async (req, res) => {
-    
-}
+app.get('/auth/github', async (req, res) => {
+    console.log("in auth github");
+    const githubAuthUrl = 'https://github.com/login/oauth/authorize';
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    console.log("client id: ", clientId);
+    res.redirect(`${githubAuthUrl}?client_id=${clientId}`);
+});
 
-app.get("/auth/github/callback"), async (req, res) => {
+app.get('/auth/github/callback', async (req, res) => {
+    const code = req.query.code;
+    try {
+        const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
+            client_id: process.env.GITHUB_CLIENT_ID,
+            client_secret: process.env.GITHUB_CLIENT_SECRET,
+            code,
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        });
 
-}
+        const tokenData = tokenResponse.data;
+        if (!tokenData.access_token) {
+            throw new Error('Access token not found in the response');
+        }
+        let githubdata = await axios.get(`https://api.github.com/user`, {
+            headers: {
+                Authorization: `Bearer ${tokenData.access_token}`,
+            },
+        });
+        console.log(githubdata);
+        res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+    } catch (error) {
+        console.error('Error fetching access token:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 
 const generateTodaysCodes = async () => {
     console.log("Generating today's codes");

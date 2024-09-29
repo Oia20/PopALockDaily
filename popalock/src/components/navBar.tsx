@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { FaLock, FaStar } from 'react-icons/fa';
+import { loggedIn } from '../store';
+import { useStore } from '@nanostores/react';
 
 const Navbar = () => {
   // State to track if the user is signed in
-  const [signedIn, setSignedIn] = useState(false);
+  // const [signedIn, setSignedIn] = useState(false);
+  const loggedInStore = useStore(loggedIn);
 
   // Handler to toggle sign-in state
   const handleSignInOut = () => {
-    setSignedIn(!signedIn);
+    // setSignedIn(!signedIn);
+    if (loggedIn) {
+      loggedIn.set(!loggedIn);
+      localStorage.removeItem('PALtoken');
+      window.location.reload();
+    } else {
+      window.location.reload();
+    }
   };
 
   return (
@@ -44,7 +54,7 @@ const Navbar = () => {
           onClick={handleSignInOut}
           className="bg-yellow-500 text-black px-3 py-1 rounded-md hover:bg-yellow-600 transition duration-200"
         >
-          {signedIn ? 'Sign Out' : 'Sign In'}
+          {loggedInStore ? 'Sign Out' : 'Sign In'}
         </button>
       </div>
     </nav>

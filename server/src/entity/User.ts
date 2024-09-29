@@ -9,7 +9,13 @@ export class User {
     @Column({nullable: true})
     username: string
 
+    @Column({nullable: true})
+    githubId: string
+
     @Column({nullable: false, default: 0})
     streak: number
+    
+    @Column({nullable: false, default: 0})
+    streakStart: Date
 
 }

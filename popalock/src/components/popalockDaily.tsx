@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import ThreeFiberLock from './threeFiberLock';
 import '../layouts/popalock.css';
 import Navbar from './navBar';
+import { loggedIn } from '../store';
+import { useStore } from '@nanostores/react';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
 const MAX_ATTEMPTS = 3;  // Maximum number of guesses
@@ -22,7 +24,8 @@ const PopALock: React.FC = () => {
   const [hintThree, setHintThree] = useState<string>('');
   const [jokeLog, setJokeLog] = useState<string>('749');
   const [loginModalOpen, setLoginModalOpen] = useState<boolean>(true);
-  const [loggedIn, setLoggedIn] = useState<boolean>(false);
+//   const [loggedIn, setLoggedIn] = useState<boolean>(false);
+  const loggedInStore = useStore(loggedIn);
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,64 +41,6 @@ const PopALock: React.FC = () => {
     }
   };
 
-  const createHintThree= () => {
-    const correctDigits = targetNumber.split('');
-      // Step 1: Randomly select an index to change
-  const indexToChange = Math.floor(Math.random() * 3);
-
-  // Step 2: Create a new random digit for the selected index (different from the original)
-  let newDigit: string;
-  do {
-    newDigit = Math.floor(Math.random() * 10).toString();
-  } while (newDigit === correctDigits[indexToChange]);
-
-  // Step 3: Get the two remaining correct digits
-  const correctTwoDigits = correctDigits.filter((_, index) => index !== indexToChange);
-
-  // Step 4: Shuffle the correct digits so they are not in their original positions
-  const shuffledDigits = [correctDigits[1], correctDigits[0]]; // Since there are only 2, just swap them
-
-  // Step 5: Reconstruct the new list
-  const newNumbers = correctDigits.map((num, index) => {
-    if (index === indexToChange) {
-      return newDigit;
-    } else {
-      return shuffledDigits.shift()!;
-    }
-  });
-  setHintThree(newNumbers.join(''));
-  }
-
-  const createHintTwo = () => {
-    const correctDigits = targetNumber.split('');
-
-  // Step 1: Create a pool of digits from 0 to 9
-    const digitPool = Array.from({ length: 10 }, (_, i) => i.toString());
-
-    // Step 2: Remove the digits in the original list from the pool
-    const availableDigits = digitPool.filter(digit => !correctDigits.includes(digit));
-
-    const newNumbers: string[] = [];
-    while (newNumbers.length < 3) {
-      const randomIndex = Math.floor(Math.random() * availableDigits.length);
-      newNumbers.push(availableDigits.splice(randomIndex, 1)[0]);
-    }
-    setHintTwo(newNumbers.join(''));
-  }
-
-  const createHintOne = () => {
-    const correctDigits = targetNumber.split('');
-
-    const indexToKeep = Math.floor(Math.random() * 3);
-
-    // Step 2: Generate new random digits (from 0 to 9) for the other two positions
-    const newNumbers = correctDigits.map((num, index) => {
-      return index === indexToKeep ? num : Math.floor(Math.random() * 10);
-    });
-  
-    setHintOne(newNumbers.join());
-  };
-
   const handleShakeLock = () => {
     if (lockRef.current) {
       lockRef.current.shakeLockAnimation(); // Call the child's shakeLockAnimation
@@ -109,7 +54,38 @@ const PopALock: React.FC = () => {
   };
 
   useEffect(() => {
-    generateTargetNumber();
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (token) {
+        localStorage.setItem('PALtoken', token); // Store token in local storage
+        window.history.replaceState({}, document.title, window.location.pathname); // Clean URL
+    }
+
+    if (localStorage.getItem('PALtoken')) {
+        setLoginModalOpen(false);
+        const testToken = localStorage.getItem('PALtoken');
+        setLoginModalOpen(false);
+        if (testToken) {
+            fetch('https://api.github.com/user', {
+                headers: {
+                  Authorization: `Bearer ${testToken}`,
+                },
+              })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.login) {
+                    console.log('Logged in as:', data.login);
+                    loggedIn.set(true);
+                    setLoginModalOpen(false);
+                } else {
+                    console.log('Not logged in');
+                    loggedIn.set(false);
+                    setLoginModalOpen(true);
+                }
+            });
+        }
+    }
     fetch("http://localhost:3000/todays-codes")
       .then(response => response.json())
       .then(data => {
@@ -124,22 +100,8 @@ const PopALock: React.FC = () => {
       });
   }, []);
 
-  // useEffect(() => {
-  //   if (targetNumber) {
-  //     createHintOne();
-  //     createHintTwo();
-  //     createHintThree();
-  //     console.log("Hello there Mr || Mrs dev tool onlooker! the code is " + jokeLog);
-  //   }
-  // }, [targetNumber]);
-
   const handleSquareClick = () => {
     inputRef.current?.focus();
-  };
-
-  const generateTargetNumber = () => {
-    const randomNumber = Math.floor(100 + Math.random() * 900).toString();
-    setTargetNumber(randomNumber);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -214,13 +176,11 @@ const PopALock: React.FC = () => {
   };
 
   const handleGitHubOAuth = () => {
-    setLoginModalOpen(false);
-    setLoggedIn(true);
+    window.location.href = 'http://localhost:3000/auth/github';
   };
 
   const playAsGuest = () => {
     setLoginModalOpen(false);
-    setLoggedIn(false);
   };
 
   const resetGame = () => {
@@ -231,7 +191,6 @@ const PopALock: React.FC = () => {
     setCorrectDigits([]);
     setIncorrectDigits([]);
     setWrongPlaceDigits([]);
-    generateTargetNumber();
     handleCloseLock();
   };
 
@@ -290,7 +249,7 @@ const PopALock: React.FC = () => {
           type="submit"
           className="mt-6 w-full bg-yellow-600 hover:bg-amber-600 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition duration-200"
         >
-          Sign in with Email
+          Sign in/up with Email
         </button>
       </form>
 
