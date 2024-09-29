@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { FaLock, FaStar, FaFire } from 'react-icons/fa';
-import { loggedIn } from '../store';
+import { loggedIn, streak } from '../store';
 import { useStore } from '@nanostores/react';
 
 const Navbar = () => {
   // State to track if the user is signed in
   const loggedInStore = useStore(loggedIn);
-  const [streak, setStreak] = useState(0);
+  const streakStore = useStore(streak);
 
   // Handler to toggle sign-in state
   const handleSignInOut = () => {
@@ -59,7 +59,7 @@ const Navbar = () => {
         </button>
         <div className="flex items-center flex-col ml-2 align-middle justify-center align-center">
           <FaFire className="text-yellow-400 text-2xl self-center" />
-          <p className='text-white'>{streak}</p>
+          <p className='text-white'>{streakStore}</p>
         </div>
       </div>
     </nav>

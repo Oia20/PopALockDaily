@@ -17,4 +17,7 @@ export class User {
 
     @Column({nullable: false, default: false})
     solvedToday: boolean
+
+    @Column({nullable: true})
+    email: string
 }

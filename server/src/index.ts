@@ -37,6 +37,18 @@ app.get("/users", async (req, res) => {
     }
 });
 
+app.get("/user/:id", async (req, res) => {
+    console.log("Fetching user from the database");
+    const id = req.params.id;
+    try {
+        const user = await AppDataSource.getRepository(User).findOne({ where: { githubId: id } || { email: id } });
+        console.log(user);
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch user" });
+    }
+});
+
 app.get("/todays-codes", async (req, res) => {
     console.log("Fetching today's codes from the database");
     try {
@@ -102,6 +114,34 @@ app.get('/auth/github/callback', async (req, res) => {
         }
     } catch (error) {
         console.error('Error fetching access token:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/update-streak/:authorization', async (req, res) => {
+    const token = req.params.authorization;
+    console.log('Updating streak for user: ', token);
+
+    if (!token) {
+        res.status(401).send('Unauthorized');
+        return;
+    }
+    try {
+        const user = await AppDataSource.getRepository(User).findOne({ where: { githubId: token } || { email: token } });
+        if (!user) {
+            console.log('User not found');
+            res.status(401).send('Unauthorized');
+            return;
+        } else {
+            console.log('User found: ', user);
+            const streak = user.streak;
+            user.streak = streak + 1;
+            user.solvedToday = true;
+            await AppDataSource.manager.save(user);
+            res.send('Streak updated successfully');
+        }
+    } catch (error) {
+        console.error('Error updating streak:', error);
         res.status(500).send('Internal Server Error');
     }
 });
@@ -202,17 +242,17 @@ const generateTodaysCodes = async () => {
         console.error("Error saving today's hints:", error);
     }
     console.log("Todays hints saved to the database");
+
+    // Loop over all users and update their solvedToday and streak
+    const users = await AppDataSource.getRepository(User).find();
+    users.forEach(async (user) => {
+        if (user.solvedToday == false) {
+            user.streak = 0;
+            user.solvedToday = false;
+        }
+    });
 };
 
-// app.get("/codes", async (req, res) => {
-//     try {
-//         const codes = await AppDataSource.getRepository(Global).find();
-//         console.log(codes);
-//         res.json(codes); 
-//     } catch (error) {
-//         res.status(500).json({ error: "Failed to fetch codes" });
-//     }
-// });
 
 // Schedule the task to run every 5 minutes
 // cron.schedule('*/5 * * * *', generateTodaysCodes);

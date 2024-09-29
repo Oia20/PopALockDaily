@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ThreeFiberLock from './threeFiberLock';
 import '../layouts/popalock.css';
 import Navbar from './navBar';
-import { loggedIn } from '../store';
+import { loggedIn, credential, streak } from '../store';
 import { useStore } from '@nanostores/react';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
@@ -24,6 +24,7 @@ const PopALock: React.FC = () => {
   const [hintThree, setHintThree] = useState<string>('');
   const [jokeLog, setJokeLog] = useState<string>('749');
   const [loginModalOpen, setLoginModalOpen] = useState<boolean>(true);
+  const streakStore = useStore(streak);
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,9 +74,15 @@ const PopALock: React.FC = () => {
               .then((response) => response.json())
               .then((data) => {
                 if (data.login) {
-                    console.log('Logged in as:', data.login);
+                    credential.set(`${data.id}`);
                     loggedIn.set(true);
                     setLoginModalOpen(false);
+                    fetch(`http://localhost:3000/user/${credential.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                      console.log(data);
+                      streak.set(data.streak);
+                    })
                 } else {
                     console.log('Not logged in');
                     loggedIn.set(false);
@@ -165,6 +172,20 @@ const PopALock: React.FC = () => {
       if (currentGuess === targetNumber) {
         handleOpenLock();
         setGameStatus('won');
+        streak.set(streakStore + 1);
+          if (localStorage.getItem('PALtoken')) {
+            console.log(credential.value);
+            fetch(`http://localhost:3000/update-streak/${credential.value}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data);
+            });
+          }
       } else if (newGuesses.length === MAX_ATTEMPTS) {
         setGameStatus('lost');
       }
