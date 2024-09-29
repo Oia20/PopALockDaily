@@ -24,8 +24,6 @@ const PopALock: React.FC = () => {
   const [hintThree, setHintThree] = useState<string>('');
   const [jokeLog, setJokeLog] = useState<string>('749');
   const [loginModalOpen, setLoginModalOpen] = useState<boolean>(true);
-//   const [loggedIn, setLoggedIn] = useState<boolean>(false);
-  const loggedInStore = useStore(loggedIn);
 
 
   const inputRef = useRef<HTMLInputElement>(null);
