@@ -14,8 +14,7 @@ export class User {
 
     @Column({nullable: false, default: 0})
     streak: number
-    
-    @Column({nullable: false, default: 0})
-    streakStart: Date
 
+    @Column({nullable: false, default: false})
+    solvedToday: boolean
 }

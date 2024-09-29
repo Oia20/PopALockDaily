@@ -83,7 +83,23 @@ app.get('/auth/github/callback', async (req, res) => {
             },
         });
         console.log(githubdata);
-        res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+        if (githubdata.data.login) {
+            const user = await AppDataSource.getRepository(User).findOne({ where: { githubId: githubdata.data.id } });
+            if (user) {
+                console.log("User already exists");
+                res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+            } else {
+                console.log("making new user");
+                const newUser = new User();
+                newUser.githubId = githubdata.data.id;
+                newUser.username = githubdata.data.login;
+                newUser.streak = 0;
+                await AppDataSource.manager.save(newUser);
+                res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+            }
+        } else {
+            res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+        }
     } catch (error) {
         console.error('Error fetching access token:', error);
         res.status(500).send('Internal Server Error');
