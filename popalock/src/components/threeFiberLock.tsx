@@ -88,9 +88,9 @@ function Loader() {
   const { progress } = useProgress();
   return (
     <Html center>
-      <div className='spinner-container'>
-        <div className='spinner-lock'>
-          <p>{<FaLock className='text-yellow-400 text-5xl' />}</p>
+      <div className='spinner-container z-10'>
+        <div className='spinner-lock z-10'>
+          <p>{<FaLock className='text-yellow-400 text-5xl z-10' />}</p>
         </div>
       </div>
     </Html>
@@ -100,7 +100,7 @@ function Loader() {
 
 const ThreeFiberLock = forwardRef((props, ref) => (
 
-  <Canvas style={{ width: '80vw', height: '50vh' }} camera={{ position: [0, -1, 5] }}>
+  <Canvas style={{ zIndex: 0, width: '80vw', height: '50vh' }} camera={{ position: [0, -1, 5] }}>
     <Suspense fallback={<Loader />}>
       <OrbitControls maxDistance={10} minDistance={5} maxPolarAngle={2.2} enablePan={false} />
       <Float>

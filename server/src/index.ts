@@ -48,6 +48,14 @@ app.get("/todays-codes", async (req, res) => {
     }
 });
 
+app.get("/auth/github"), async (req, res) => {
+    
+}
+
+app.get("/auth/github/callback"), async (req, res) => {
+
+}
+
 const generateTodaysCodes = async () => {
     console.log("Generating today's codes");
     const todaysNumbers: string[] = [];
@@ -145,15 +153,15 @@ const generateTodaysCodes = async () => {
     console.log("Todays hints saved to the database");
 };
 
-app.get("/codes", async (req, res) => {
-    try {
-        const codes = await AppDataSource.getRepository(Global).find();
-        console.log(codes);
-        res.json(codes); 
-    } catch (error) {
-        res.status(500).json({ error: "Failed to fetch codes" });
-    }
-});
+// app.get("/codes", async (req, res) => {
+//     try {
+//         const codes = await AppDataSource.getRepository(Global).find();
+//         console.log(codes);
+//         res.json(codes); 
+//     } catch (error) {
+//         res.status(500).json({ error: "Failed to fetch codes" });
+//     }
+// });
 
 // Schedule the task to run every 5 minutes
 // cron.schedule('*/5 * * * *', generateTodaysCodes);

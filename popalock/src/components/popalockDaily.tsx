@@ -21,6 +21,8 @@ const PopALock: React.FC = () => {
   const [hintTwo, setHintTwo] = useState<string>('');
   const [hintThree, setHintThree] = useState<string>('');
   const [jokeLog, setJokeLog] = useState<string>('749');
+  const [loginModalOpen, setLoginModalOpen] = useState<boolean>(true);
+  const [loggedIn, setLoggedIn] = useState<boolean>(false);
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -211,6 +213,16 @@ const PopALock: React.FC = () => {
     }
   };
 
+  const handleGitHubOAuth = () => {
+    setLoginModalOpen(false);
+    setLoggedIn(true);
+  };
+
+  const playAsGuest = () => {
+    setLoginModalOpen(false);
+    setLoggedIn(false);
+  };
+
   const resetGame = () => {
     setGuesses([]);
     setGuessResults([]);
@@ -228,11 +240,95 @@ const PopALock: React.FC = () => {
   };
 
   return (
+
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex flex-col items-center justify-center p-4 pt-0 mt-0">
+    {/* Login Modal */}
+    {loginModalOpen && (
+  <div className="z-50 fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+    <div className="mt-2 mb-2 z-50 absolute bg-gradient-to-br from-sky-800 from-0% via-cyan-800 to-cyan-800 rounded-2xl shadow-2xl max-w-lg w-full p-8 overflow-y-scroll h-4/5">
+      <h1 className="text-4xl font-extrabold text-center text-amber-400">Pop A Lock!</h1>
+      <p className="text-gray-200 text-center mt-4">The open-source daily puzzle game.</p>
+      <p className="text-gray-300 text-center">
+        Sign in to keep track of your daily streak, or play as a guest.
+      </p>
+
+      {/* How to Play Section */}
+      <div className="bg-cyan-900 p-5 rounded-lg mt-6 shadow-lg">
+        <h2 className="text-xl font-bold text-amber-400">How to Play</h2>
+        <ul className="list-disc list-inside text-gray-200 mt-3 space-y-2">
+          <li>Functionally this game is like Wordle, but with numbers instead of letters.</li>
+          <li>You get 3 attempts each day to crack the code.</li>
+          <li>Use the hints to help you crack the code.</li>
+        </ul>
+      </div>
+
+      {/* Email and Password Input */}
+      <form className="mt-6">
+        <div>
+          <label className="block text-gray-200 font-semibold" htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            className="w-full mt-2 p-3 rounded-lg bg-cyan-900 text-white placeholder-gray-400"
+            placeholder="Enter your email"
+            required
+          />
+        </div>
+        <div className="mt-4">
+          <label className="block text-gray-200 font-semibold" htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            className="w-full mt-2 p-3 rounded-lg bg-cyan-900 text-white placeholder-gray-400"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="mt-6 w-full bg-yellow-600 hover:bg-amber-600 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition duration-200"
+        >
+          Sign in with Email
+        </button>
+      </form>
+
+      {/* GitHub OAuth Button */}
+      <button
+        onClick={handleGitHubOAuth}
+        className="mt-4 w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-5 rounded-lg shadow-lg flex items-center justify-center space-x-3 transition duration-200"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="white">
+          <path
+            fillRule="evenodd"
+            d="M12 2C6.48 2 2 6.48 2 12c0 4.41 2.87 8.13 6.84 9.46.5.09.68-.22.68-.48v-1.7c-2.79.61-3.37-1.35-3.37-1.35-.45-1.14-1.1-1.45-1.1-1.45-.9-.61.07-.6.07-.6 1 .07 1.52 1.03 1.52 1.03.9 1.54 2.36 1.1 2.94.84.09-.65.35-1.1.64-1.36-2.22-.26-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.02A9.548 9.548 0 0 1 12 6.8c.86.004 1.73.12 2.53.35 1.9-1.29 2.74-1.02 2.74-1.02.55 1.41.21 2.45.1 2.71.64.7 1.03 1.6 1.03 2.69 0 3.85-2.35 4.69-4.58 4.95.36.31.69.93.69 1.88v2.78c0 .27.18.58.68.48C19.13 20.13 22 16.41 22 12c0-5.52-4.48-10-10-10z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <span>Sign in with GitHub</span>
+      </button>
+
+      {/* Play as Guest Button */}
+      <button
+        onClick={playAsGuest}
+        className="mt-4 w-full bg-yellow-600 hover:bg-amber-600 text-white font-semibold py-3 px-5 rounded-lg shadow-lg flex items-center justify-center transition duration-200"
+      >
+        Play as Guest
+      </button>
+    </div>
+  </div>
+)}
+
+
+
+
+      
       <div className="w-screen h-full flex justify-center items-center"><Navbar/></div>
       <div className="w-full h-full flex justify-center">
         <ThreeFiberLock ref={lockRef} />
       </div>
+
 
       {/* Guesses Grid */}
       <div className="grid grid-rows-${MAX_ATTEMPTS} gap-2 mb-8">

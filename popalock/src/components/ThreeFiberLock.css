@@ -2,10 +2,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 10;
+
   }
   
   .spinner-lock {
     animation: spin 1s linear infinite; /* Spin animation */
+    z-index: 10;
   }
   
   @keyframes spin {
