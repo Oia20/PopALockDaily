@@ -11,6 +11,10 @@ const jwt = require('jsonwebtoken');
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
+const clientUrl = "https://popalock.pages.dev"
+// const clientUrl = "localhost:4321"
+
 AppDataSource.initialize()
     .then(() => {
         console.log("Data source is initialized");
@@ -22,7 +26,7 @@ AppDataSource.initialize()
 const app = express();
 app.use(express.json());
 const corsOptions = {
-    origin: '*',
+    origin: ['https://daring-learning-production.up.railway.app', 'https://popalock.pages.dev'],
     credentials: true,
     methods: ['GET', 'POST'],
 };
@@ -153,7 +157,7 @@ app.get('/auth/github/callback', async (req, res) => {
             const user = await AppDataSource.getRepository(User).findOne({ where: { githubId: githubdata.data.id } });
             if (user) {
                 console.log("User already exists");
-                res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+                res.redirect(clientUrl + '/?token=' + tokenData.access_token);
             } else {
                 console.log("making new user");
                 const newUser = new User();
@@ -161,10 +165,10 @@ app.get('/auth/github/callback', async (req, res) => {
                 newUser.username = githubdata.data.login;
                 newUser.streak = 0;
                 await AppDataSource.manager.save(newUser);
-                res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+                res.redirect(clientUrl + '/?token=' + tokenData.access_token);
             }
         } else {
-            res.redirect('http://localhost:4321/?token=' + tokenData.access_token);
+            res.redirect(clientUrl + '/?token=' + tokenData.access_token);
         }
     } catch (error) {
         console.error('Error fetching access token:', error);
