@@ -137,8 +137,34 @@ app.post('/update-streak/:authorization', async (req, res) => {
             const streak = user.streak;
             user.streak = streak + 1;
             user.solvedToday = true;
+            user.attemptedToday = true;
             await AppDataSource.manager.save(user);
-            res.send('Streak updated successfully');
+            res.status(200)
+        }
+    } catch (error) {
+        console.error('Error updating streak:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/attempt-today', async (req, res) => {
+    const token = req.body.token;
+    console.log('Attempting today for user: ', token);
+    if (!token) {
+        res.status(401).send('Unauthorized');
+        return;
+    }
+    try {
+        const user = await AppDataSource.getRepository(User).findOne({ where: { githubId: token } || { email: token } });
+        if (!user) {
+            console.log('User not found');
+            res.status(401).send('Unauthorized');
+            return;
+        } else {
+            console.log('User found: ', user);
+            user.attemptedToday = true;
+            await AppDataSource.manager.save(user);
+            res.status(200)
         }
     } catch (error) {
         console.error('Error updating streak:', error);
@@ -246,10 +272,16 @@ const generateTodaysCodes = async () => {
     // Loop over all users and update their solvedToday and streak
     const users = await AppDataSource.getRepository(User).find();
     users.forEach(async (user) => {
+        console.log("resetting user: ", user.githubId);
         if (user.solvedToday == false) {
             user.streak = 0;
             user.solvedToday = false;
+            user.attemptedToday = false;
+        } else {
+            user.attemptedToday = false;
+            user.solvedToday = false;
         }
+        await AppDataSource.manager.save(user);
     });
 };
 
@@ -258,7 +290,7 @@ const generateTodaysCodes = async () => {
 // cron.schedule('*/5 * * * *', generateTodaysCodes);
 
 // Schedule the task to run every 1 minutes
-// cron.schedule('*/1 * * * *', generateTodaysCodes);
+cron.schedule('*/1 * * * *', generateTodaysCodes);
 
 
 app.listen(3000, () => {

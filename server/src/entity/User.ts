@@ -20,4 +20,7 @@ export class User {
 
     @Column({nullable: true})
     email: string
+
+    @Column({nullable: false, default: false})
+    attemptedToday: boolean
 }

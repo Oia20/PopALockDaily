@@ -4,6 +4,10 @@ import '../layouts/popalock.css';
 import Navbar from './navBar';
 import { loggedIn, credential, streak } from '../store';
 import { useStore } from '@nanostores/react';
+import { AlreadySolved } from './alreadySolved';
+import { attemptedToday } from '../store';
+import { LostToday } from './lostToday';
+import { WonToday } from './wonToday';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
 const MAX_ATTEMPTS = 3;  // Maximum number of guesses
@@ -25,6 +29,7 @@ const PopALock: React.FC = () => {
   const [jokeLog, setJokeLog] = useState<string>('749');
   const [loginModalOpen, setLoginModalOpen] = useState<boolean>(true);
   const streakStore = useStore(streak);
+  const attemptedTodayStore = useStore(attemptedToday);
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +87,9 @@ const PopALock: React.FC = () => {
                     .then(data => {
                       console.log(data);
                       streak.set(data.streak);
+                      if (data.attemptedToday) {
+                        attemptedToday.set(true);
+                      }
                     })
                 } else {
                     console.log('Not logged in');
@@ -90,6 +98,18 @@ const PopALock: React.FC = () => {
                 }
             });
         }
+    } else {
+      const solvedTimestamp = localStorage.getItem('solvedTimestamp');
+      console.log(solvedTimestamp);
+
+      if (solvedTimestamp) {
+        const timestamp = new Date(solvedTimestamp);
+        console.log(timestamp.getTime(), new Date().getTime());
+        if (timestamp.getTime() > new Date().getTime()) {
+          console.log(timestamp.getTime(), new Date().getTime());
+          attemptedToday.set(true);
+        }
+      }
     }
     fetch("http://localhost:3000/todays-codes")
       .then(response => response.json())
@@ -171,23 +191,54 @@ const PopALock: React.FC = () => {
 
       if (currentGuess === targetNumber) {
         handleOpenLock();
-        setGameStatus('won');
+        window.scrollTo(0, 0);
+        setTimeout(() => {
+          setGameStatus('won');
+        }, 2000);
         streak.set(streakStore + 1);
           if (localStorage.getItem('PALtoken')) {
             console.log(credential.value);
-            fetch(`http://localhost:3000/update-streak/${credential.value}`, {
+            try {
+              fetch(`http://localhost:3000/update-streak/${credential.value}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              })
+              .then((response) => {
+                if (response.status === 200) {
+                  console.log('Streak updated successfully');
+                } else {
+                  console.error('Error updating streak:', response.status);
+                }
+              })
+            } catch (error) {
+              console.error('Error updating streak:', error);
+            }
+          } else {
+            // set as the time with just the date of tomorrow with the dashes
+            localStorage.setItem('solvedTimestamp', new Date(new Date().getTime() + 86400000).toISOString().replace(/T.+$/, ''));
+          }
+      } else if (newGuesses.length === MAX_ATTEMPTS) {
+        setGameStatus('lost');
+          try {
+            fetch(`http://localhost:3000/attempt-today`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
+              body: JSON.stringify({ token: credential.value }),
             })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log(data);
-            });
+            .then((response) => {
+              if (response.status === 200) {
+                console.log('Streak updated successfully');
+              } else {
+                console.error('Error updating streak:', response.status);
+              }
+            })
+          } catch (error) {
+            console.error('Error updating streak:', error);
           }
-      } else if (newGuesses.length === MAX_ATTEMPTS) {
-        setGameStatus('lost');
       }
     } else {
       handleShakeLock();
@@ -221,6 +272,9 @@ const PopALock: React.FC = () => {
 
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex flex-col items-center justify-center p-4 pt-0 mt-0">
     {/* Login Modal */}
+
+    {attemptedTodayStore && <AlreadySolved />}
+
     {loginModalOpen && (
   <div className="z-50 fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
     <div className="mt-2 mb-2 z-50 absolute bg-gradient-to-br from-sky-800 from-0% via-cyan-800 to-cyan-800 rounded-2xl shadow-2xl max-w-lg w-full p-8 overflow-y-scroll h-4/5">
@@ -424,26 +478,10 @@ const PopALock: React.FC = () => {
       )}
 
       {gameStatus === 'won' && (
-        <div className="mt-8 text-green-500 text-2xl text-center">
-          🎉 Congratulations! You guessed the number!
-          <button
-            onClick={resetGame}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white font-bold rounded"
-          >
-            Play Again
-          </button>
-        </div>
+        <WonToday />
       )}
       {gameStatus === 'lost' && (
-        <div className="mt-8 text-red-500 text-2xl text-center">
-          😞 Game Over! The number was {targetNumber}.
-          <button
-            onClick={resetGame}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white font-bold rounded"
-          >
-            Try Again
-          </button>
-        </div>
+        <LostToday />
       )}
       <h1 className="mt-8 text-lg">Created with ❤️ & ☕ by <a className='underline' href="https://dement.dev" target="_blank" rel="noopener noreferrer">Jacob Dement</a></h1>
     </div>

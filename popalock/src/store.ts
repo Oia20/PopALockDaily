@@ -7,3 +7,5 @@ export const streak = atom<number>(0);
 export const solvedToday = atom<boolean>(false);
 
 export const credential = atom<string>('');
+
+export const attemptedToday = atom<boolean>(false);
