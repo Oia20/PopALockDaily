@@ -276,29 +276,32 @@ const generateTodaysCodes = async () => {
     }
 
     const createHintThree= () => {
-        const correctDigits = todaysNumbers[0].split('');
+        const correctDigits = todaysNumbers[0].split(''); // Split the target number into an array of digits
 
-          // Step 1: Randomly select an index to change
+        // Step 1: Randomly select an index to change
         const indexToChange = Math.floor(Math.random() * 3);
-        
-        // Step 2: Create a new random digit for the selected index (different from the original)
+    
+        // Step 2: Create a new random digit for the selected index (different from the original digits)
         let newDigit: string;
         do {
             newDigit = Math.floor(Math.random() * 10).toString();
-        } while (newDigit === correctDigits[indexToChange]);
-        
-        // Step 3: Get the two remaining correct digits
+        } while (correctDigits.includes(newDigit)); // Ensure the new digit is not one of the original ones
+    
+        // Step 3: Get the two remaining correct digits (excluding the one being changed)
         const correctTwoDigits = correctDigits.filter((_, index) => index !== indexToChange);
-        
-        // Step 4: Shuffle the correct digits so they are not in their original positions
-        const shuffledDigits = [correctDigits[1], correctDigits[0]]; // Since there are only 2, just swap them
-        
-        // Step 5: Reconstruct the new list
+    
+        // Step 4: Shuffle the two remaining correct digits and make sure they don't stay in their original positions
+        let shuffledDigits = [...correctTwoDigits];
+        while (shuffledDigits[0] === correctTwoDigits[0] || shuffledDigits[1] === correctTwoDigits[1]) {
+            shuffledDigits = [shuffledDigits[1], shuffledDigits[0]]; // Swap positions
+        }
+    
+        // Step 5: Reconstruct the new number with one wrong digit and two correct digits in the wrong places
         const newNumbers = correctDigits.map((num, index) => {
             if (index === indexToChange) {
-            return newDigit;
+                return newDigit; // Replace the randomly selected index with the new digit
             } else {
-            return shuffledDigits.shift()!;
+                return shuffledDigits.shift()!; // Place the shuffled correct digits
             }
         });
         hintThree.push(newNumbers.join());
