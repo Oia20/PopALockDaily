@@ -6,7 +6,7 @@ import { Global } from "./entity/Global";
 const cron = require('node-cron');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -343,9 +343,8 @@ const generateTodaysCodes = async () => {
 // Schedule the task to run every 5 minutes
 // cron.schedule('*/5 * * * *', generateTodaysCodes);
 
-// Schedule the task to run every 1 minutes
-cron.schedule('*/1 * * * *', generateTodaysCodes);
-
+// Schedule the task to run every 24 hrs.
+cron.schedule('0 0 * * *', generateTodaysCodes);
 
 app.listen(3000, () => {
     console.log("Server is running on port 3000");

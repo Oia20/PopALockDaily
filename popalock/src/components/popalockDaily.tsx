@@ -11,6 +11,9 @@ import { WonToday } from './wonToday';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
 const MAX_ATTEMPTS = 3;  // Maximum number of guesses
+// const fetchUrl = "http://localhost:3000"
+const fetchUrl = "https://daring-learning-production.up.railway.app"
+
 type Feedback = 'correct' | 'present' | 'absent';
 
 const PopALock: React.FC = () => {
@@ -63,7 +66,7 @@ const PopALock: React.FC = () => {
   const handleLogin = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch(fetchUrl + '/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +113,7 @@ const PopALock: React.FC = () => {
                     credential.set(`${data.id}`);
                     loggedIn.set(true);
                     setLoginModalOpen(false);
-                    fetch(`http://localhost:3000/user/${credential.value}`)
+                    fetch(`${fetchUrl}/user/${credential.value}`)
                     .then(response => response.json())
                     .then(data => {
                       console.log(data);
@@ -129,7 +132,7 @@ const PopALock: React.FC = () => {
     } else if (localStorage.getItem('PALJWtoken')) {
       console.log("logged in with JWT");
       // Confirm the user's authentication
-      fetch('http://localhost:3000/confirm-auth', {
+      fetch(fetchUrl + '/confirm-auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +171,7 @@ const PopALock: React.FC = () => {
         }
       }
     }
-    fetch("http://localhost:3000/todays-codes")
+    fetch(fetchUrl + "/todays-codes")
       .then(response => response.json())
       .then(data => {
         console.log(data);
@@ -256,7 +259,7 @@ const PopALock: React.FC = () => {
           if (localStorage.getItem('PALtoken') || localStorage.getItem('PALJWtoken')) {
             console.log(credential.value);
             try {
-              fetch(`http://localhost:3000/update-streak/${credential.value}`, {
+              fetch(`${fetchUrl}/update-streak/${credential.value}`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -279,7 +282,7 @@ const PopALock: React.FC = () => {
       } else if (newGuesses.length === MAX_ATTEMPTS) {
         setGameStatus('lost');
           try {
-            fetch(`http://localhost:3000/attempt-today`, {
+            fetch(`${fetchUrl}/attempt-today`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -303,7 +306,7 @@ const PopALock: React.FC = () => {
   };
 
   const handleGitHubOAuth = () => {
-    window.location.href = 'http://localhost:3000/auth/github';
+    window.location.href = fetchUrl + '/auth/github';
   };
 
   const playAsGuest = () => {
