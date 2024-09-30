@@ -10,7 +10,7 @@ import { LostToday } from './lostToday';
 import { WonToday } from './wonToday';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
-const MAX_ATTEMPTS = 3;  // Maximum number of guesses
+const MAX_ATTEMPTS = 5;  // Maximum number of guesses
 // const fetchUrl = "http://localhost:3000"
 const fetchUrl = "https://daring-learning-production.up.railway.app"
 
@@ -349,7 +349,7 @@ const PopALock: React.FC = () => {
         <h2 className="text-xl font-bold text-amber-400">How to Play</h2>
         <ul className="list-disc list-inside text-gray-200 mt-3 space-y-2">
           <li>Functionally this game is like Wordle, but with numbers instead of letters.</li>
-          <li>You get 3 attempts each day to crack the code.</li>
+          <li>You get 5 attempts each day to crack the code.</li>
           <li>Use the hints to help you crack the code.</li>
         </ul>
       </div>

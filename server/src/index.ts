@@ -26,7 +26,7 @@ AppDataSource.initialize()
 const app = express();
 app.use(express.json());
 const corsOptions = {
-    origin: ['https://daring-learning-production.up.railway.app', 'https://popalock.pages.dev'],
+    origin: ['https://daring-learning-production.up.railway.app', 'https://popalock.pages.dev', 'https://popalock.dement.dev'],
     credentials: true,
     methods: ['GET', 'POST'],
 };
