@@ -36,34 +36,38 @@ const PopALock: React.FC = () => {
     }
   };
 
-  const createHintThree= () => {
-    const correctDigits = targetNumber.split('');
-      // Step 1: Randomly select an index to change
-  const indexToChange = Math.floor(Math.random() * 3);
+  const createHintThree = () => {
+    const correctDigits = targetNumber.split(''); // Split the target number into an array of digits
 
-  // Step 2: Create a new random digit for the selected index (different from the original)
-  let newDigit: string;
-  do {
-    newDigit = Math.floor(Math.random() * 10).toString();
-  } while (newDigit === correctDigits[indexToChange]);
+    // Step 1: Randomly select an index to change
+    const indexToChange = Math.floor(Math.random() * 3);
 
-  // Step 3: Get the two remaining correct digits
-  const correctTwoDigits = correctDigits.filter((_, index) => index !== indexToChange);
+    // Step 2: Create a new random digit for the selected index (different from the original digits)
+    let newDigit: string;
+    do {
+        newDigit = Math.floor(Math.random() * 10).toString();
+    } while (correctDigits.includes(newDigit)); // Ensure the new digit is not one of the original ones
 
-  // Step 4: Shuffle the correct digits so they are not in their original positions
-  const shuffledDigits = [correctDigits[1], correctDigits[0]]; // Since there are only 2, just swap them
+    // Step 3: Get the two remaining correct digits (excluding the one being changed)
+    const correctTwoDigits = correctDigits.filter((_, index) => index !== indexToChange);
 
-  // Step 5: Reconstruct the new list
-  const newNumbers = correctDigits.map((num, index) => {
-    if (index === indexToChange) {
-      return newDigit;
-    } else {
-      return shuffledDigits.shift()!;
+    // Step 4: Shuffle the two remaining correct digits and make sure they don't stay in their original positions
+    let shuffledDigits = [...correctTwoDigits];
+    while (shuffledDigits[0] === correctTwoDigits[0] || shuffledDigits[1] === correctTwoDigits[1]) {
+        shuffledDigits = [shuffledDigits[1], shuffledDigits[0]]; // Swap positions
     }
-  });
-  setHintThree(newNumbers.join(''));
-  }
 
+    // Step 5: Reconstruct the new number with one wrong digit and two correct digits in the wrong places
+    const newNumbers = correctDigits.map((num, index) => {
+        if (index === indexToChange) {
+            return newDigit; // Replace the randomly selected index with the new digit
+        } else {
+            return shuffledDigits.shift()!; // Place the shuffled correct digits
+        }
+    });
+
+    setHintThree(newNumbers.join('')); // Set the hint with the newly created number
+};
   const createHintTwo = () => {
     const correctDigits = targetNumber.split('');
 
