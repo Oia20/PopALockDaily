@@ -4,7 +4,7 @@ import '../layouts/popalock.css';
 import Navbar from './navBarInfinite';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
-const MAX_ATTEMPTS = 5;  // Maximum number of guesses
+const MAX_ATTEMPTS = 4;  // Maximum number of guesses
 type Feedback = 'correct' | 'present' | 'absent';
 
 const PopALock: React.FC = () => {

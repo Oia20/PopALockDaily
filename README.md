@@ -24,7 +24,7 @@
 
 <ol>
   <li>Functionally Pop A Lock works like <b>Wordle</b>, but with numbers instead of letters.</li>
-  <li>You get 5 guesses per day</li>
+  <li>You get 4 guesses per day</li>
   <li>Use the hints to help you crack the code, without them it's near impossible to crack the code.</li>
   <li>Check back the next day for a <b>new puzzle</b>!</li>
 </ol>
