@@ -1,4 +1,3 @@
-import {FaStar} from 'react-icons/fa';
 
 export const WonToday = () => {
 

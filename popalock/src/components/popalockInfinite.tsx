@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ThreeFiberLock from './threeFiberLock';
 import '../layouts/popalock.css';
-import Navbar from './navBar';
+import Navbar from './navBarInfinite';
 
 const NUMBER_LENGTH = 3; // Number of digits in the target number
 const MAX_ATTEMPTS = 3;  // Maximum number of guesses
