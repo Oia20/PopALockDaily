@@ -30,6 +30,9 @@ const PopALock: React.FC = () => {
   const [loginModalOpen, setLoginModalOpen] = useState<boolean>(true);
   const streakStore = useStore(streak);
   const attemptedTodayStore = useStore(attemptedToday);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +57,31 @@ const PopALock: React.FC = () => {
   const handleOpenLock = () => {
     if (lockRef.current) {
       lockRef.current.openLock(); // Call the child's openLock
+    }
+  };
+
+  const handleLogin = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json(); // Parse error message from server
+        setError(errorData.message); // Display error message to the user
+        return; // Exit the function since login failed
+      }
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('PALJWtoken', data.token); // Store token in local storage
+        window.location.reload();
+      }
+    } catch (error) {
+      setError('Invalid email or password');
     }
   };
 
@@ -98,8 +126,37 @@ const PopALock: React.FC = () => {
                 }
             });
         }
-    } else {
-      const solvedTimestamp = localStorage.getItem('solvedTimestamp');
+    } else if (localStorage.getItem('PALJWtoken')) {
+      console.log("logged in with JWT");
+      // Confirm the user's authentication
+      fetch('http://localhost:3000/confirm-auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: localStorage.getItem('PALJWtoken') }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data.user) {
+          loggedIn.set(true);
+          credential.set(`${data.user.id}`);
+          console.log("Here homie: ",credential.value);
+          if (data.user.attemptedToday) {
+            attemptedToday.set(true);
+          }
+          streak.set(data.user.streak);
+
+          setLoginModalOpen(false);
+        } else {
+          console.log('Not logged in');
+          loggedIn.set(false);
+          setLoginModalOpen(true);
+        }
+      });     
+      
+    } else {const solvedTimestamp = localStorage.getItem('solvedTimestamp');
       console.log(solvedTimestamp);
 
       if (solvedTimestamp) {
@@ -196,7 +253,7 @@ const PopALock: React.FC = () => {
           setGameStatus('won');
         }, 2000);
         streak.set(streakStore + 1);
-          if (localStorage.getItem('PALtoken')) {
+          if (localStorage.getItem('PALtoken') || localStorage.getItem('PALJWtoken')) {
             console.log(credential.value);
             try {
               fetch(`http://localhost:3000/update-streak/${credential.value}`, {
@@ -297,6 +354,8 @@ const PopALock: React.FC = () => {
       {/* Email and Password Input */}
       <form className="mt-6">
         <div>
+        {error && <div className="text-red-500 text-center">{error}</div>}
+
           <label className="block text-gray-200 font-semibold" htmlFor="email">Email</label>
           <input
             type="email"
@@ -305,6 +364,8 @@ const PopALock: React.FC = () => {
             className="w-full mt-2 p-3 rounded-lg bg-cyan-900 text-white placeholder-gray-400"
             placeholder="Enter your email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="mt-4">
@@ -316,10 +377,13 @@ const PopALock: React.FC = () => {
             className="w-full mt-2 p-3 rounded-lg bg-cyan-900 text-white placeholder-gray-400"
             placeholder="Enter your password"
             required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
         <button
           type="submit"
+          onClick={handleLogin}
           className="mt-6 w-full bg-yellow-600 hover:bg-amber-600 text-white font-semibold py-3 px-5 rounded-lg shadow-lg transition duration-200"
         >
           Sign in/up with Email

@@ -14,6 +14,7 @@ const Navbar = () => {
     if (loggedIn) {
       loggedIn.set(!loggedIn);
       localStorage.removeItem('PALtoken');
+      localStorage.removeItem('PALJWtoken');
       window.location.reload();
     } else {
       window.location.reload();

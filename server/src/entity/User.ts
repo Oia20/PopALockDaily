@@ -18,9 +18,12 @@ export class User {
     @Column({nullable: false, default: false})
     solvedToday: boolean
 
-    @Column({nullable: true})
+    @Column({nullable: true, unique: true})
     email: string
 
     @Column({nullable: false, default: false})
     attemptedToday: boolean
+
+    @Column({nullable: true})
+    password: string
 }

@@ -6,7 +6,10 @@ import { Global } from "./entity/Global";
 const cron = require('node-cron');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET;
 
 AppDataSource.initialize()
     .then(() => {
@@ -48,6 +51,57 @@ app.get("/user/:id", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch user" });
     }
 });
+
+  app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    console.log("logging in with: ", email, password);
+    try {
+      const user = await AppDataSource.getRepository(User).findOne({ where: { email } });
+      if (!user) {
+        try {
+        console.log("user not found, creating new user");
+        const newUser = new User();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("hashed password: ", hashedPassword);
+        newUser.email = email;
+        newUser.password = hashedPassword;
+        console.log("new user: ", newUser);
+        await AppDataSource.manager.save(newUser);
+        const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: '1d' });
+        console.log("token: ", token);
+        res.status(201).json({ token, userId: newUser.id });
+        return;
+        } catch (error) {
+            console.log("error creating new user: ", error);
+          res.status(500).json({ message: 'Error registering user' });
+        }
+      } else {
+            const isValidPassword = await bcrypt.compare(password, user.password);
+            if (!isValidPassword) {
+                return res.status(400).json({ message: 'Invalid password' });
+            }
+        
+            const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
+            res.json({ token, userId: user.id });
+        }
+    } catch (error) {
+      res.status(500).json({ message: 'Error logging in' });
+    }
+  });
+
+  app.post('/confirm-auth', async (req, res) => {
+    const { token } = req.body;
+    try {
+      const { id } = jwt.verify(token, JWT_SECRET);
+      const user = await AppDataSource.getRepository(User).findOne({ where: { id } });
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid token' });
+      }
+      res.json({ user });
+    } catch (error) {
+      res.status(500).json({ message: 'Error confirming auth' });
+    }
+  });
 
 app.get("/todays-codes", async (req, res) => {
     console.log("Fetching today's codes from the database");
@@ -120,14 +174,14 @@ app.get('/auth/github/callback', async (req, res) => {
 
 app.post('/update-streak/:authorization', async (req, res) => {
     const token = req.params.authorization;
-    console.log('Updating streak for user: ', token);
+    console.log('Updating streak for user:', token);
 
     if (!token) {
         res.status(401).send('Unauthorized');
         return;
     }
     try {
-        const user = await AppDataSource.getRepository(User).findOne({ where: { githubId: token } || { email: token } });
+        const user = await AppDataSource.getRepository(User).findOne({ where: [{ githubId: token }, { id: parseInt(token) }] });
         if (!user) {
             console.log('User not found');
             res.status(401).send('Unauthorized');
@@ -155,7 +209,7 @@ app.post('/attempt-today', async (req, res) => {
         return;
     }
     try {
-        const user = await AppDataSource.getRepository(User).findOne({ where: { githubId: token } || { email: token } });
+        const user = await AppDataSource.getRepository(User).findOne({ where: [{ githubId: token }, { id: parseInt(token) }] });
         if (!user) {
             console.log('User not found');
             res.status(401).send('Unauthorized');
